@@ -1,6 +1,0 @@
-Flask
-PyMuPDF
-sentence-transformers
-torch
-torchvision
-werkzeug
