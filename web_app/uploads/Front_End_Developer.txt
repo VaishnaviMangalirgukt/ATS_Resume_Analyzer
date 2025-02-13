@@ -1,0 +1,39 @@
+Job Title: Front-End Developer
+
+Location: [Your Location or Remote]
+Job Type: Full-Time
+Experience Level: [Entry-Level/ Mid-Level/ Senior]
+
+Job Description:
+We are seeking a talented Front-End Developer to join our team. You will be responsible for developing and maintaining user-facing applications, ensuring seamless user experiences, and collaborating with designers and backend developers to create high-quality web applications.
+
+Responsibilities:
+Develop and maintain responsive web applications using HTML, CSS, and JavaScript.
+Work with modern front-end frameworks such as React, Angular, or Vue.js.
+Optimize applications for speed, scalability, and cross-browser compatibility.
+Collaborate with UI/UX designers to implement visually appealing and user-friendly interfaces.
+Integrate front-end components with backend services and APIs.
+Write clean, maintainable, and well-documented code following best practices.
+Debug and resolve technical issues efficiently.
+Stay up-to-date with emerging front-end technologies and trends.
+Required Skills & Qualifications:
+Proficiency in HTML, CSS, JavaScript (ES6+), and TypeScript,java,coding.
+Experience with front-end frameworks/libraries like React.js, Angular, or Vue.js.
+Knowledge of CSS preprocessors (SASS, SCSS, LESS) and responsive design principles.
+Experience with RESTful APIs and integrating front-end applications with backend systems.
+Familiarity with version control systems like Git/GitHub/GitLab.
+Understanding of cross-browser compatibility and web performance optimization.
+Knowledge of front-end build tools such as Webpack, Babel, or Vite.
+Strong problem-solving skills and attention to detail.
+Good communication and teamwork skills.
+Preferred Qualifications:
+Experience with Next.js, Redux, or Tailwind CSS.
+Familiarity with GraphQL and headless CMSs.
+Basic understanding of backend technologies (Node.js, Express, or Django).
+Knowledge of testing frameworks (Jest, Cypress, or Mocha).
+Why Join Us?
+Competitive salary and benefits package.
+Work on exciting and innovative projects.
+Collaborative and supportive team environment.
+Opportunities for professional growth and learning. Apply Now! If you're passionate about front-end development and building amazing user experiences, we'd love to hear from you!
+

@@ -1,0 +1,18 @@
+body {
+    background: url("/static/background3.PNG") no-repeat center center fixed;
+    background-size: cover;
+    font-family: Arial, sans-serif;
+    color: white;
+    text-align: center;
+}
+
+.container {
+    background: rgb(0, 0, 0);  /* Adds a dark overlay */
+    padding: 20px;
+    border-radius: 10px;
+    width: 50%;
+    margin: auto;
+    margin-top: 50px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5); /* Added shadow effect */
+    backdrop-filter: blur(10px); /* Added blur effect */
+}

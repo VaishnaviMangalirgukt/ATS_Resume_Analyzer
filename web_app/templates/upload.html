@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Upload Resumes & Job Descriptions</title>
+</head>
+<body>
+    <h2>Upload Files</h2>
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        <label>Upload Resume (PDF):</label>
+        <input type="file" name="resume" accept=".pdf" required><br>
+        <label>Upload Job Description (CSV):</label>
+        <input type="file" name="job_desc" accept=".csv" required><br>
+        <button type="submit">Upload</button>
+    </form>
+</body>
+</html>

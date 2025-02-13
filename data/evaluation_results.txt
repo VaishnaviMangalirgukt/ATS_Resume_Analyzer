@@ -1,0 +1,1 @@
+Mean Similarity Score: 0.8840
