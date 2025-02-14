@@ -1,33 +1,35 @@
 # Use an official Python runtime as a parent image
-FROM python:3.10-slim
+FROM python:3.10
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
-# Install system dependencies required for Rust-based Python packages
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     curl \
     build-essential \
-    gcc \
-    libssl-dev \
-    pkg-config \
+    python3-pip \
+    python3-dev \
+    cargo \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Rust and Cargo (required for some Python dependencies)
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
-    && export PATH="$HOME/.cargo/bin:$PATH"
+# Set environment variables
+ENV PATH="/root/.cargo/bin:$PATH"
 
-# Copy requirements file into the container
+# Copy the requirements file
 COPY requirements.txt .
 
-# Install Python dependencies
+# Install Rust and Cargo
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+# Upgrade pip and install dependencies
 RUN pip install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
+# Copy the rest of the app files
 COPY . .
 
-# Expose the port the app runs on (if applicable)
+# Expose the application port
 EXPOSE 5000
 
 # Command to run the application
