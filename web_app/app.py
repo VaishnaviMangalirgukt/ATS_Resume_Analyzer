@@ -179,10 +179,7 @@ def analyze():
     return jsonify({"success": True, "results": results})
 
 if __name__ == "__main__":
-    import os  
-    port = int(os.getenv("PORT", 8080))  # Default to 8080 if PORT is not set  
-    print(f"Starting Flask app on port {port}...")  
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=5000)  # Change to 5000 or any available port
 
 
 
