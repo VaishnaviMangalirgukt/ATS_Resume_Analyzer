@@ -34,4 +34,7 @@ EXPOSE 5000
 
 # Command to run the application
 CMD ["python", "web_app/app.py"]
+# Expose port 10000
+EXPOSE 10000
+
 
