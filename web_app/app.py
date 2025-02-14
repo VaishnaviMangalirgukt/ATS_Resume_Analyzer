@@ -179,7 +179,8 @@ def analyze():
     return jsonify({"success": True, "results": results})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8501)  # or 9000 / 5050
+    app.run(host="0.0.0.0", port=5051)  # or 7000 / 9020
+
 
 
 
