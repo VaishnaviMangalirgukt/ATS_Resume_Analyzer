@@ -1,93 +1,152 @@
 import os
+import base64
 import fitz  # PyMuPDF for PDF text extraction
-from flask import Flask, request, jsonify, render_template
-from werkzeug.utils import secure_filename
+import streamlit as st
 from sentence_transformers import SentenceTransformer, util
 
-app = Flask(__name__)
+# ✅ Set Streamlit Page Config FIRST
+st.set_page_config(page_title="AI Resume Analyzer", layout="wide")
 
-# Load model
+# Load NLP model for similarity
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
-# Upload folder
-UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+# Define paths
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Gets the directory of app.py
+IMAGE_PATH = os.path.join(BASE_DIR, "static", "background3.png")
 
-def load_text(file_path):
-    """Extract text from PDFs or TXT files."""
+# Function to encode image to base64
+def get_base64_encoded_image(image_path):
+    """Convert image to base64 for inline CSS background."""
+    if not os.path.exists(image_path):
+        st.error(f"❌ Error: Background image not found at {image_path}")
+        return ""
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
+# Get encoded background image
+image_base64 = get_base64_encoded_image(IMAGE_PATH)
+
+# ✅ Apply Background Image & Styles
+st.markdown(
+    f"""
+    <style>
+        .stApp {{
+            background: url("data:image/png;base64,{image_base64}") no-repeat center center fixed;
+            background-size: cover;
+        }}
+        h1 {{
+            text-align: center;
+            font-size: 40px;
+            font-weight: bold;
+            color: white;
+        }}
+        h4 {{
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: black;
+        }}
+        .upload-box {{
+            border: 2px dashed #4CAF50;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            background-color: white;
+            margin: auto;
+            width: 20%;  /* ✅ Reduced width */
+        }}
+        .stButton>button {{
+            display: block;
+            margin: auto;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 18px;
+            padding: 10px 20px;
+            border-radius: 8px;
+        }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# ✅ UI Layout
+st.markdown("<h1>AI Resume Analyzer</h1>", unsafe_allow_html=True)
+st.markdown(
+    "<h4>Upload a job description and resumes to analyze their similarity.</h4>",
+    unsafe_allow_html=True
+)
+
+# ✅ Function to extract text from uploaded files
+def load_text(uploaded_file):
+    """Extract text from an uploaded file (PDF or TXT)."""
     try:
-        if file_path.endswith(".pdf"):
+        if uploaded_file.type == "application/pdf":
             text = ""
-            with fitz.open(file_path) as pdf:
+            with fitz.open(stream=uploaded_file.read(), filetype="pdf") as pdf:
                 for page in pdf:
-                    text += page.get_text("text")  # Extract text from each page
+                    text += page.get_text("text")
             return text.strip()
-        elif file_path.endswith(".txt"):
-            with open(file_path, "r", encoding="utf-8") as file:
-                return file.read().strip()
+        
+        elif uploaded_file.type == "text/plain":
+            return uploaded_file.read().decode("utf-8").strip()
+        
         else:
             return ""
+    
     except Exception as e:
-        print(f"Error reading {file_path}: {e}")
+        st.error(f"Error reading {uploaded_file.name}: {e}")
         return ""
 
-def rank_resumes(job_desc_path, resume_files):
-    """Rank resumes based on similarity score."""
+# ✅ Function to rank resumes based on job description
+def rank_resumes(job_desc_text, resume_files):
+    """Compute similarity scores and rank resumes."""
     try:
-        job_desc_text = load_text(job_desc_path)
         if not job_desc_text:
             return [{"error": "Job description is empty or unreadable."}]
 
         job_desc_embedding = model.encode(job_desc_text, convert_to_tensor=True)
+
         results = []
-
         for resume_file in resume_files:
-            resume_path = os.path.join(UPLOAD_FOLDER, secure_filename(resume_file.filename))
-            resume_file.save(resume_path)  # Save uploaded file
-
-            resume_text = load_text(resume_path)  # Extract text
+            resume_text = load_text(resume_file)
             if not resume_text:
-                print(f"Warning: No text extracted from {resume_file.filename}")
-                continue
+                continue  # Skip empty files
 
             resume_embedding = model.encode(resume_text, convert_to_tensor=True)
             similarity = util.pytorch_cos_sim(job_desc_embedding, resume_embedding).item() * 100
-            
+
             results.append({
-                "resume": resume_file.filename,
+                "resume": resume_file.name,
                 "similarity": round(similarity, 2)
             })
 
-        results.sort(key=lambda x: x.get("similarity", 0), reverse=True)
+        results.sort(key=lambda x: x["similarity"], reverse=True)
         return results
 
     except Exception as e:
-        print(f"Error ranking resumes: {e}")
+        st.error(f"Error ranking resumes: {e}")
         return [{"error": "An error occurred while ranking resumes."}]
 
-@app.route("/")
-def home():
-    return render_template("index.html")
+# ✅ Upload job description (smaller box)
+st.markdown('<div class="upload-box">📂 <b>Upload Job Description (PDF/TXT)</b></div>', unsafe_allow_html=True)
+job_desc_file = st.file_uploader("", type=["pdf", "txt"], key="job_desc", label_visibility="collapsed")
 
-@app.route("/analyze", methods=["POST"])
-def analyze():
-    if "job_description" not in request.files or "resumes" not in request.files:
-        return jsonify({"error": "Missing job description or resumes."}), 400
+# ✅ Upload multiple resumes (smaller box)
+st.markdown('<div class="upload-box">📂 <b>Upload Resumes (PDF/TXT)</b></div>', unsafe_allow_html=True)
+resume_files = st.file_uploader("", type=["pdf", "txt"], accept_multiple_files=True, key="resumes", label_visibility="collapsed")
 
-    job_desc_file = request.files["job_description"]
-    resumes_files = request.files.getlist("resumes")
+# ✅ Centered Analyze Button
+if st.button("Analyze"):
+    if job_desc_file and resume_files:
+        job_desc_text = load_text(job_desc_file)
 
-    if job_desc_file.filename == "" or len(resumes_files) == 0:
-        return jsonify({"error": "No selected file(s)."}), 400
+        results = rank_resumes(job_desc_text, resume_files)
 
-    job_desc_path = os.path.join(UPLOAD_FOLDER, secure_filename(job_desc_file.filename))
-    job_desc_file.save(job_desc_path)
-
-    results = rank_resumes(job_desc_path, resumes_files)
-
-    return jsonify({"success": True, "results": results})
-
-#if __name__ == "__main__":
-    #port = int(os.environ.get("PORT", 5052))  # Set default port to 5052, but can be overridden
-   # app.run(host="0.0.0.0", port=port)
+        st.subheader("🔍 Ranking Results:")
+        for res in results:
+            if "error" in res:
+                st.warning(res["error"])
+            else:
+                st.write(f"**{res['resume']}**: {res['similarity']}% match")
+    else:
+        st.warning("Please upload both a job description and resumes to analyze.")
