@@ -88,6 +88,6 @@ def analyze():
 
     return jsonify({"success": True, "results": results})
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5052))  # Set default port to 5052, but can be overridden
-    app.run(host="0.0.0.0", port=port)
+#if __name__ == "__main__":
+    #port = int(os.environ.get("PORT", 5052))  # Set default port to 5052, but can be overridden
+   # app.run(host="0.0.0.0", port=port)
