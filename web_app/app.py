@@ -12,7 +12,7 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 
 # Define paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Gets the directory of app.py
-IMAGE_PATH = os.path.join(BASE_DIR, "static", "background1.AVIF")
+IMAGE_PATH = os.path.join(BASE_DIR, "static", "background3.png")
 
 # Function to encode image to base64
 def get_base64_encoded_image(image_path):
