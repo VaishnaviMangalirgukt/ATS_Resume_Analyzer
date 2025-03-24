@@ -95,12 +95,16 @@ def load_text(uploaded_file):
         st.error(f"Error reading {uploaded_file.name}: {e}")
         return ""
 
-# ✅ Function to extract skills from text
-def extract_skills(text):
-    """Extract skills-related words from text, case-insensitively."""
-    skills_pattern = re.compile(r'(?i)\b(?:Python|Java|C\+\+|SQL|Machine Learning|Deep Learning|NLP|TensorFlow|Pandas|Scikit-learn|Data Analysis|Leadership|Communication|Project Management)\b', re.IGNORECASE)
-    skills = set(match.group().lower() for match in skills_pattern.finditer(text))  # Convert to lowercase
-    return skills
+# ✅ Function to extract skills and qualifications from text
+def extract_skills_and_qualifications(text):
+    """Extract skills and qualifications-related words from text."""
+    skills_pattern = re.compile(r'(?i)\b(?:Python|Java|C\+\+|SQL|Machine Learning|Deep Learning|NLP|TensorFlow|Pandas|Scikit-learn|Data Analysis|Leadership|Communication|Project Management)\b')
+    qualifications_pattern = re.compile(r'(?i)\b(?:BSc|MSc|PhD|Bachelor|Master|Doctorate|BE|BTech|MTech)\b')
+    
+    skills = set(map(str.lower, skills_pattern.findall(text)))
+    qualifications = set(map(str.lower, qualifications_pattern.findall(text)))
+    
+    return skills, qualifications
 
 # ✅ Function to rank resumes based on job description
 def rank_resumes(job_desc_text, resume_files):
@@ -110,7 +114,7 @@ def rank_resumes(job_desc_text, resume_files):
             return [{"error": "Job description is empty."}]
 
         job_desc_embedding = model.encode(job_desc_text, convert_to_tensor=True)
-        job_skills = extract_skills(job_desc_text)
+        job_skills, job_qualifications = extract_skills_and_qualifications(job_desc_text)
 
         results = []
         for resume_file in resume_files:
@@ -121,16 +125,23 @@ def rank_resumes(job_desc_text, resume_files):
             resume_embedding = model.encode(resume_text, convert_to_tensor=True)
             similarity = util.pytorch_cos_sim(job_desc_embedding, resume_embedding).item() * 100
 
-            resume_skills = extract_skills(resume_text)
+            resume_skills, resume_qualifications = extract_skills_and_qualifications(resume_text)
 
             matched_skills = job_skills.intersection(resume_skills)
             unmatched_skills = job_skills - resume_skills
+            missing_skills = resume_skills - job_skills
+            
+            matched_qualifications = job_qualifications.intersection(resume_qualifications)
+            unmatched_qualifications = job_qualifications - resume_qualifications
 
             results.append({
                 "resume": resume_file.name,
                 "similarity": round(similarity, 2),
                 "matched_skills": matched_skills,
-                "unmatched_skills": unmatched_skills
+                "unmatched_skills": unmatched_skills,
+                "missing_skills": missing_skills,
+                "matched_qualifications": matched_qualifications,
+                "unmatched_qualifications": unmatched_qualifications
             })
 
         results.sort(key=lambda x: x["similarity"], reverse=True)
@@ -141,24 +152,4 @@ def rank_resumes(job_desc_text, resume_files):
         return [{"error": "An error occurred while ranking resumes."}]
 
 # ✅ Text area for job description
-st.markdown('<div class="upload-box">📝 <b>Enter Job Description</b></div>', unsafe_allow_html=True)
-job_desc_text = st.text_area("Paste the job description here:", height=200)
-
-# ✅ Upload multiple resumes (smaller box)
-st.markdown('<div class="upload-box">📂 <b>Upload Resumes (PDF/TXT)</b></div>', unsafe_allow_html=True)
-resume_files = st.file_uploader("Upload Resumes", type=["pdf", "txt"], accept_multiple_files=True, key="resumes", label_visibility="visible")
-
-# ✅ Centered Analyze Button
-if st.button("Analyze"):
-    if job_desc_text and resume_files:
-        results = rank_resumes(job_desc_text, resume_files)
-        st.subheader("🔍 Ranking Results:")
-        for res in results:
-            if "error" in res:
-                st.warning(res["error"])
-            else:
-                st.write(f"**{res['resume']}**: {res['similarity']}% match")
-                st.write(f"✔ Matched Skills: {', '.join(res['matched_skills']) if res['matched_skills'] else 'None'}")
-                st.write(f"❌ Unmatched Skills: {', '.join(res['unmatched_skills']) if res['unmatched_skills'] else 'None'}")
-    else:
-        st.warning("Please enter a job description and upload resumes to analyze.")
+st.markdown('<div class="upload-box">📝 <b>Enter
