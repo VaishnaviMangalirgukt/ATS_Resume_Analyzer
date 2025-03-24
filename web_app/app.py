@@ -153,3 +153,27 @@ def rank_resumes(job_desc_text, resume_files):
 
 # ✅ Text area for job description
 st.markdown('<div class="upload-box">📝 <b>Enter
+
+job_desc_text = st.text_area("Paste the job description here:", height=200)
+
+# ✅ Upload multiple resumes
+st.markdown('<div class="upload-box">📂 <b>Upload Resumes (PDF/TXT)</b></div>', unsafe_allow_html=True)
+resume_files = st.file_uploader("Upload Resumes", type=["pdf", "txt"], accept_multiple_files=True, key="resumes", label_visibility="visible")
+
+# ✅ Centered Analyze Button
+if st.button("Analyze"):
+    if job_desc_text and resume_files:
+        results = rank_resumes(job_desc_text, resume_files)
+        st.subheader("🔍 Ranking Results:")
+        for res in results:
+            if "error" in res:
+                st.warning(res["error"])
+            else:
+                st.write(f"**{res['resume']}**: {res['similarity']}% match")
+                st.write(f"✔ Matched Skills: {', '.join(res['matched_skills']) if res['matched_skills'] else 'None'}")
+                st.write(f"❌ Unmatched Skills: {', '.join(res['unmatched_skills']) if res['unmatched_skills'] else 'None'}")
+                st.write(f"➕ Missing Skills: {', '.join(res['missing_skills']) if res['missing_skills'] else 'None'}")
+                st.write(f"🎓 Matched Qualifications: {', '.join(res['matched_qualifications']) if res['matched_qualifications'] else 'None'}")
+                st.write(f"🎓 Unmatched Qualifications: {', '.join(res['unmatched_qualifications']) if res['unmatched_qualifications'] else 'None'}")
+    else:
+        st.warning("Please enter a job description and upload resumes to analyze.")
