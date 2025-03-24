@@ -12,7 +12,7 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 
 # Define paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Gets the directory of app.py
-IMAGE_PATH = os.path.join(BASE_DIR, "static", "background1.avif")
+IMAGE_PATH = os.path.join(BASE_DIR, "static", "background1.AVIF")
 
 # Function to encode image to base64
 def get_base64_encoded_image(image_path):
@@ -72,7 +72,7 @@ st.markdown(
 # ✅ UI Layout
 st.markdown("<h1>AI Resume Analyzer</h1>", unsafe_allow_html=True)
 st.markdown(
-    "<h4>Upload a job description and resumes to analyze their similarity.</h4>",
+    "<h4>Enter a job description and upload resumes to analyze their similarity.</h4>",
     unsafe_allow_html=True
 )
 
@@ -127,9 +127,8 @@ def rank_resumes(job_desc_text, resume_files):
         st.error(f"Error ranking resumes: {e}")
         return [{"error": "An error occurred while ranking resumes."}]
 
-# ✅ Upload job description (smaller box)
-st.markdown('<div class="upload-box">📂 <b>Upload Job Description (PDF/TXT)</b></div>', unsafe_allow_html=True)
-job_desc_file = st.file_uploader("", type=["pdf", "txt"], key="job_desc", label_visibility="collapsed")
+# ✅ Text input for job description
+job_desc_text = st.text_area("✍️ Enter Job Description", "", height=200)
 
 # ✅ Upload multiple resumes (smaller box)
 st.markdown('<div class="upload-box">📂 <b>Upload Resumes (PDF/TXT)</b></div>', unsafe_allow_html=True)
@@ -137,9 +136,7 @@ resume_files = st.file_uploader("", type=["pdf", "txt"], accept_multiple_files=T
 
 # ✅ Centered Analyze Button
 if st.button("Analyze"):
-    if job_desc_file and resume_files:
-        job_desc_text = load_text(job_desc_file)
-
+    if job_desc_text and resume_files:
         results = rank_resumes(job_desc_text, resume_files)
 
         st.subheader("🔍 Ranking Results:")
@@ -149,4 +146,4 @@ if st.button("Analyze"):
             else:
                 st.write(f"**{res['resume']}**: {res['similarity']}% match")
     else:
-        st.warning("Please upload both a job description and resumes to analyze.")
+        st.warning("Please enter a job description and upload resumes to analyze.")
