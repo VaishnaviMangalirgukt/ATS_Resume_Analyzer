@@ -3,6 +3,7 @@ import base64
 import fitz  # PyMuPDF for PDF text extraction
 import streamlit as st
 from sentence_transformers import SentenceTransformer, util
+import re
 
 # ✅ Set Streamlit Page Config FIRST
 st.set_page_config(page_title="AI Resume Analyzer", layout="wide")
@@ -94,6 +95,16 @@ def load_text(uploaded_file):
         st.error(f"Error reading {uploaded_file.name}: {e}")
         return ""
 
+# ✅ Function to extract skills & experience from text
+def extract_skills_experience(text):
+    """Extract skills and experience-related words from text."""
+    skills_pattern = re.compile(r'(?i)\b(?:Python|Java|C\+\+|SQL|Machine Learning|Deep Learning|NLP|TensorFlow|Pandas|Scikit-learn|Data Analysis|Leadership|Communication|Project Management)\b')
+    experience_pattern = re.compile(r'(?i)(\d+\s*(?:years?|months?)\s*(?:experience|exp))')
+    
+    skills = set(skills_pattern.findall(text))
+    experience = set(experience_pattern.findall(text))
+    return skills, experience
+
 # ✅ Function to rank resumes based on job description
 def rank_resumes(job_desc_text, resume_files):
     """Compute similarity scores and rank resumes."""
@@ -102,6 +113,7 @@ def rank_resumes(job_desc_text, resume_files):
             return [{"error": "Job description is empty."}]
 
         job_desc_embedding = model.encode(job_desc_text, convert_to_tensor=True)
+        job_skills, job_experience = extract_skills_experience(job_desc_text)
 
         results = []
         for resume_file in resume_files:
@@ -112,9 +124,18 @@ def rank_resumes(job_desc_text, resume_files):
             resume_embedding = model.encode(resume_text, convert_to_tensor=True)
             similarity = util.pytorch_cos_sim(job_desc_embedding, resume_embedding).item() * 100
 
+            resume_skills, resume_experience = extract_skills_experience(resume_text)
+
+            matched_skills = job_skills.intersection(resume_skills)
+            unmatched_skills = job_skills - resume_skills
+            matched_experience = job_experience.intersection(resume_experience)
+            unmatched_experience = job_experience - resume_experience
+
             results.append({
                 "resume": resume_file.name,
-                "similarity": round(similarity, 2)
+                "similarity": round(similarity, 2),
+                "matched_skills": matched_skills,
+                "unmatched_skills": unmatched_skills
             })
 
         results.sort(key=lambda x: x["similarity"], reverse=True)
@@ -142,5 +163,9 @@ if st.button("Analyze"):
                 st.warning(res["error"])
             else:
                 st.write(f"**{res['resume']}**: {res['similarity']}% match")
+                st.write(f"✔ Matched Skills: {', '.join(res['matched_skills']) if res['matched_skills'] else 'None'}")
+                st.write(f"❌ Unmatched Skills: {', '.join(res['unmatched_skills']) if res['unmatched_skills'] else 'None'}")
+                st.write(f"✔ Matched Experience: {', '.join(res['matched_experience']) if res['matched_experience'] else 'None'}")
+                st.write(f"❌ Unmatched Experience: {', '.join(res['unmatched_experience']) if res['unmatched_experience'] else 'None'}")
     else:
         st.warning("Please enter a job description and upload resumes to analyze.")
