@@ -76,6 +76,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+
 # ✅ Function to extract text from uploaded files
 def load_text(uploaded_file):
     """Extract text from an uploaded file (PDF or TXT)."""
