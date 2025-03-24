@@ -97,9 +97,9 @@ def load_text(uploaded_file):
 
 # ✅ Function to extract skills from text
 def extract_skills(text):
-    """Extract skills-related words from text."""
-    skills_pattern = re.compile(r'(?i)\b(?:Python|Java|C\+\+|SQL|Machine Learning|Deep Learning|NLP|TensorFlow|Pandas|Scikit-learn|Data Analysis|Leadership|Communication|Project Management)\b')
-    skills = set(skills_pattern.findall(text))
+    """Extract skills-related words from text, case-insensitively."""
+    skills_pattern = re.compile(r'(?i)\b(?:Python|Java|C\+\+|SQL|Machine Learning|Deep Learning|NLP|TensorFlow|Pandas|Scikit-learn|Data Analysis|Leadership|Communication|Project Management)\b', re.IGNORECASE)
+    skills = set(match.group().lower() for match in skills_pattern.finditer(text))  # Convert to lowercase
     return skills
 
 # ✅ Function to rank resumes based on job description
