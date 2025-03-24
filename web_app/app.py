@@ -12,7 +12,7 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 
 # Define paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Gets the directory of app.py
-IMAGE_PATH = os.path.join(BASE_DIR, "static", "background1.AVIF")
+IMAGE_PATH = os.path.join(BASE_DIR, "static", "background1.avif")  # Ensure correct format
 
 # Function to encode image to base64
 def get_base64_encoded_image(image_path):
@@ -31,7 +31,7 @@ st.markdown(
     f"""
     <style>
         .stApp {{
-            background: url("data:image/avif;base64,{image_base64}") no-repeat center center fixed;
+            background: url("data:image/png;base64,{image_base64}") no-repeat center center fixed;
             background-size: cover;
         }}
         h1 {{
@@ -53,7 +53,7 @@ st.markdown(
             text-align: center;
             background-color: white;
             margin: auto;
-            width: 20%;  /* ✅ Reduced width */
+            width: 30%;
         }}
         .stButton>button {{
             display: block;
@@ -71,10 +71,7 @@ st.markdown(
 
 # ✅ UI Layout
 st.markdown("<h1>AI Resume Analyzer</h1>", unsafe_allow_html=True)
-st.markdown(
-    "<h4>Upload a job description and resumes to analyze their similarity.</h4>",
-    unsafe_allow_html=True
-)
+st.markdown("<h4>Enter a job description and upload resumes to analyze their similarity.</h4>", unsafe_allow_html=True)
 
 # ✅ Function to extract text from uploaded files
 def load_text(uploaded_file):
@@ -102,7 +99,7 @@ def rank_resumes(job_desc_text, resume_files):
     """Compute similarity scores and rank resumes."""
     try:
         if not job_desc_text:
-            return [{"error": "Job description is empty or unreadable."}]
+            return [{"error": "Job description is empty."}]
 
         job_desc_embedding = model.encode(job_desc_text, convert_to_tensor=True)
 
@@ -127,9 +124,9 @@ def rank_resumes(job_desc_text, resume_files):
         st.error(f"Error ranking resumes: {e}")
         return [{"error": "An error occurred while ranking resumes."}]
 
-# ✅ Upload job description (smaller box)
-st.markdown('<div class="upload-box">📂 <b>Upload Job Description (PDF/TXT)</b></div>', unsafe_allow_html=True)
-job_desc_file = st.file_uploader("Upload Job Description", type=["pdf", "txt"], key="job_desc", label_visibility="visible")
+# ✅ Text area for job description
+st.markdown('<div class="upload-box">📝 <b>Enter Job Description</b></div>', unsafe_allow_html=True)
+job_desc_text = st.text_area("Paste the job description here:", height=200)
 
 # ✅ Upload multiple resumes (smaller box)
 st.markdown('<div class="upload-box">📂 <b>Upload Resumes (PDF/TXT)</b></div>', unsafe_allow_html=True)
@@ -137,11 +134,8 @@ resume_files = st.file_uploader("Upload Resumes", type=["pdf", "txt"], accept_mu
 
 # ✅ Centered Analyze Button
 if st.button("Analyze"):
-    if job_desc_file and resume_files:
-        job_desc_text = load_text(job_desc_file)
-
+    if job_desc_text and resume_files:
         results = rank_resumes(job_desc_text, resume_files)
-
         st.subheader("🔍 Ranking Results:")
         for res in results:
             if "error" in res:
@@ -149,4 +143,4 @@ if st.button("Analyze"):
             else:
                 st.write(f"**{res['resume']}**: {res['similarity']}% match")
     else:
-        st.warning("Please upload both a job description and resumes to analyze.")
+        st.warning("Please enter a job description and upload resumes to analyze.")
