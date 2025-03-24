@@ -135,7 +135,8 @@ def rank_resumes(job_desc_text, resume_files):
                 "resume": resume_file.name,
                 "similarity": round(similarity, 2),
                 "matched_skills": matched_skills,
-                "unmatched_skills": unmatched_skills
+                "unmatched_skills": unmatched_skills,
+     
             })
 
         results.sort(key=lambda x: x["similarity"], reverse=True)
